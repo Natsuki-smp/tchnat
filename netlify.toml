@@ -1,0 +1,3 @@
+# Netlify static publish
+[build]
+  publish = "."

@@ -1,0 +1,1157 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f3f6fb">
+<title>Dub Studio — เกมพากย์เสียงออนไลน์</title>
+<style>
+:root{color-scheme:light;--bg:#f3f6fb;--panel:#ffffff;--panel2:#f6f9fc;--line:#d9e2ec;--tx:#16222e;--mut:#5f7384;--cy:#0891b2;--yl:#f5a60a;--pk:#d6247f;--gn:#16a37a;--rd:#e5334a;--track:#e6edf4;--sh:0 8px 28px #1b3a5718}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI","Noto Sans Thai",Tahoma,sans-serif}
+body{background:radial-gradient(1000px 520px at 50% -160px,#cfeef6 0,transparent 70%) no-repeat,radial-gradient(700px 400px at 100% 100%,#ffe9c2 0,transparent 70%) no-repeat fixed,var(--bg)}
+button,input,select{font:inherit;color:inherit}
+h1,h2,h3{margin:0}
+.screen{display:none;min-height:100vh;padding:18px max(18px,env(safe-area-inset-right)) 18px max(18px,env(safe-area-inset-left));max-width:1500px;margin:0 auto}
+.screen.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--sh)}
+.card h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--cy);margin-bottom:10px;font-weight:800}
+.card h3.sp{margin-top:22px}
+.btn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 16px;cursor:pointer;font-weight:700;min-height:40px;box-shadow:0 1px 2px #1b3a5712;transition:transform .08s,border-color .15s,box-shadow .15s}
+.btn:hover:not(:disabled){border-color:var(--cy);box-shadow:0 3px 10px #0891b222}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.y{background:linear-gradient(135deg,#ffc247,#f5a60a);color:#3a2600;border-color:#f5a60a}
+.btn.c{background:linear-gradient(135deg,#17b8d6,#0891b2);color:#fff;border-color:#0891b2}
+.btn.r{background:linear-gradient(135deg,#ff5d72,#e5334a);color:#fff;border-color:#e5334a}
+.btn.sm{padding:6px 12px;font-size:13px;min-height:34px;border-radius:10px}
+:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+input[type=text],input:not([type]),select{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 12px;width:100%;min-height:44px}
+input[type=text]:focus,input:not([type]):focus,select:focus{border-color:var(--cy);outline:0;box-shadow:0 0 0 3px #0891b230}
+input[type=range]{width:100%;height:34px;accent-color:var(--cy);background:transparent;padding:0;margin:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.mut{color:var(--mut);font-size:13px}
+#dubVideoHistoryModal{position:fixed;inset:0;z-index:1000;background:#07111dcc;display:none;align-items:center;justify-content:center;padding:16px}
+#dubVideoHistoryModal.on{display:flex}#dubVideoHistoryModal .inner{background:#fff;border-radius:18px;padding:16px;width:min(900px,100%);max-height:95vh;overflow:auto}#dubHistoryVideo{display:block;width:100%;max-height:68vh;background:#000;border-radius:12px;margin:12px 0}
+/* home */
+.hero{text-align:center;margin:7vh 0 26px}
+.hero h1{font-size:clamp(38px,8vw,70px);letter-spacing:.03em;line-height:1.05;font-weight:900}
+.hero h1 b{background:linear-gradient(135deg,#0891b2,#d6247f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--mut);max-width:540px;margin:12px auto 0}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.chips span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;color:var(--cy)}
+.homebox{max-width:460px;margin:0 auto;display:grid;gap:14px}
+.homebox .row>*{flex:1}
+/* top bar */
+.top{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+.top h2{font-size:18px;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:800}
+.top h2 b{color:var(--cy)}
+.top.sticky{position:sticky;top:0;z-index:30;background:#f3f6fbee;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);margin:-18px -18px 16px;padding:12px 18px;border-bottom:1px solid var(--line)}
+/* lobby */
+.lgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
+.code{font-size:36px;font-weight:900;letter-spacing:.2em;color:var(--yl)}
+.drop{border:2px dashed #b8c8d6;background:var(--panel2);border-radius:14px;padding:26px 14px;text-align:center;cursor:pointer;color:var(--mut)}
+.drop.over,.drop:hover,.drop:focus-visible{border-color:var(--cy);color:var(--cy);background:#e9f8fb}
+.bar{position:sticky;bottom:0;margin-top:14px;padding:12px 0 calc(12px + env(safe-area-inset-bottom));display:flex;gap:12px;align-items:center;background:linear-gradient(#f3f6fb00,var(--bg) 35%)}
+.bar .btn{min-width:150px}
+.prog{height:8px;background:var(--track);border-radius:6px;overflow:hidden;margin-top:8px}
+.prog>i{display:block;height:100%;width:0;background:var(--cy);transition:width .15s}
+.player{display:flex;align-items:center;gap:8px;padding:5px 0}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--gn)}
+.role{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.role:first-child{border-top:0}
+.role .own{font-size:12px;color:#b36f00;font-weight:600}
+.role select{grid-column:1/-1;padding:6px 8px;font-size:13px;min-height:36px}
+#qr{margin-top:10px;background:#fff;padding:8px;border-radius:10px;border:1px solid var(--line);display:inline-block}
+#qr:empty{display:none}
+/* studio */
+.studio{display:grid;grid-template-columns:290px minmax(0,1fr) 300px;gap:16px;align-items:start}
+.studio main{min-width:0}
+#clipList{max-height:72vh;overflow:auto;display:grid;gap:6px}
+.clip{border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;background:var(--panel2)}
+.clip:hover{border-color:var(--cy)}
+.clip.sel{border-color:var(--yl);background:#fff4d6}
+.clip .h{display:flex;justify-content:space-between;gap:6px;font-size:12px;color:var(--mut)}
+.clip .t{font-size:14px;margin-top:2px}
+.tag{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--track);border:1px solid var(--line)}
+.tag.mine{border-color:var(--yl);color:#b36f00;background:#fff4d6}
+.tag.done{border-color:var(--gn);color:var(--gn);background:#e4f7f0}
+.monitor{position:relative;background:#000;border:5px solid #fff;border-radius:18px;aspect-ratio:16/9;overflow:hidden;box-shadow:0 12px 36px #1b3a5733}
+.monitor video,.monitor img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:transparent}
+.monitor video{z-index:1}
+.cap{position:absolute;z-index:3;left:0;right:0;bottom:6%;text-align:center;font-size:clamp(16px,2.6vw,30px);font-weight:700;padding:0 10px;color:#fff;text-shadow:0 2px 4px #000,0 0 8px #000}
+.rtag{position:absolute;z-index:3;left:12px;top:10px;background:var(--cy);color:#fff;font-weight:800;font-size:12px;padding:2px 9px;border-radius:999px;max-width:70%}
+.cd{position:absolute;z-index:4;inset:0;display:none;align-items:center;justify-content:center;font-size:110px;font-weight:900;color:#ffc247;background:#000a}
+.cd.on{display:flex}
+.cd.line-wait{background:#0000;color:transparent;overflow:hidden}
+.cd.line-wait::after{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:#111;box-shadow:0 0 10px #000;animation:lineSweep 1s linear forwards}
+@keyframes lineSweep{from{top:0}to{top:100%}}
+.rec{position:absolute;z-index:3;right:12px;top:10px;color:#ff5d72;font-weight:800;font-size:12px;display:none}
+.rec.on{display:block;animation:bl 1s infinite}
+@keyframes bl{50%{opacity:.25}}
+#wave{width:100%;height:150px;background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:12px;display:block;box-shadow:var(--sh)}
+.legend{font-size:12px;color:var(--mut);margin-top:6px}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 4px 0 10px}
+.legend b:first-child{margin-left:0}
+.btn.xl{display:block;width:100%;min-height:60px;font-size:19px;margin-top:14px;border-radius:16px;box-shadow:0 8px 20px #f5a60a40}
+.btn.xl.isdone{background:linear-gradient(135deg,#34d6a3,#16a37a);color:#fff;border-color:#16a37a;box-shadow:0 8px 20px #16a37a40}
+.plist{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--mut)}
+.plist .pl{display:inline-flex;gap:6px;align-items:center;font-weight:600;color:var(--tx)}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.ctrl .btn{flex:1;min-width:110px}
+.ctrl .big{font-size:16px}
+.meter{position:relative;height:12px;border-radius:7px;overflow:hidden;background:linear-gradient(90deg,var(--cy) 0 65%,var(--yl) 65% 88%,var(--rd) 88%);margin:8px 0 10px}
+.meter i{position:absolute;inset:0;background:var(--track);transform-origin:right;transform:scaleX(1);transition:transform .05s linear}
+#micHint{color:var(--rd);font-size:12px;font-weight:700}
+.overlay{--tx:#e8f1f4;--mut:#9fb3be;--line:#33434d;position:fixed;inset:0;background:#0a1118ee;color:var(--tx);z-index:50;display:none;padding:18px;overflow:auto}
+.overlay.on{display:block}
+.overlay .in{max-width:980px;margin:0 auto}
+.overlay .btn:not(.c){background:#18222b;color:var(--tx);border-color:var(--line)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#16222e;color:#fff;padding:11px 18px;border-radius:14px;z-index:99;display:none;max-width:90vw;text-align:center;box-shadow:0 10px 30px #0004}
+label.ck{display:flex;gap:8px;align-items:flex-start;font-size:13px;margin-top:10px;color:var(--mut)}
+label.ck input{margin-top:3px;width:18px;height:18px;accent-color:var(--cy)}
+/* tablet + phone */
+@media(max-width:1000px){
+  .studio{display:flex;flex-direction:column}
+  .studio main{order:1;width:100%}.studio .side{order:2}.studio .clips{order:3}
+  #clipList{max-height:42vh}
+  #studio{padding-bottom:104px}
+  .ctrl.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#fffffff2;border-top:1px solid var(--line);box-shadow:0 -6px 24px #1b3a5718;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:grid;grid-template-columns:1fr 1fr 1.5fr 1fr 1fr;gap:8px}
+  .ctrl.dock .btn{min-width:0;padding:10px 2px;font-size:14px;min-height:50px}
+  .kb{display:none}
+}
+@media(max-width:700px){
+  .screen{padding-top:12px}
+  .top.sticky{margin:-12px -18px 12px;padding:10px 14px}
+  #studioPlayers{flex-basis:100%;order:3}
+  .top h2{font-size:16px}
+  .code{font-size:30px}
+  #wave{height:120px}
+  .cd{font-size:80px}
+  .bar .btn{flex:1}
+  .overlay{padding:10px}
+  .overlay .ctrl .btn{min-width:0}
+  .monitor{border-width:3px;border-radius:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<section id="home" class="screen on">
+  <div class="hero">
+    <h1>DUB <b>STUDIO</b></h1>
+    <p>โหลด Voice Pack (.zip) และเลือกวิดีโอ MP4 แยกอีกช่องได้ ไม่ต้องรอแปลง OGV</p>
+    <div class="chips"><span>🎙 เล่นคนเดียว</span><span>👥 เล่นกับเพื่อน</span><span>📦 Voice Pack .zip</span><span>🎞 วิดีโอ .mp4</span></div>
+  </div>
+  <div class="homebox">
+    <div class="card">
+      <label class="mut">ชื่อของคุณ</label>
+      <input id="nameIn" maxlength="20" placeholder="ชื่อผู้เล่น" style="margin:6px 0 12px">
+      <div class="row">
+        <button class="btn y" id="btnSolo">เล่นคนเดียว</button>
+        <button class="btn c" id="btnHost">สร้างห้อง</button>
+      </div>
+    </div>
+    <div class="card">
+      <label class="mut">มีรหัสห้องแล้ว?</label>
+      <div class="row" style="margin-top:6px;flex-wrap:nowrap">
+        <input id="codeIn" maxlength="5" placeholder="รหัสห้อง 5 ตัว" style="text-transform:uppercase;letter-spacing:.2em">
+        <button class="btn" id="btnJoin" style="flex:0 0 auto">เข้าห้อง</button>
+      </div>
+    </div>
+    <div class="card" style="text-align:center">
+      <a class="btn c" href="https://www.freeconvert.com/ogv-to-mp4" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;width:100%;box-sizing:border-box">แอปแปลง OGV → MP4</a>
+      <p class="mut" style="margin:8px 0 0">เปิด FreeConvert ในแท็บใหม่ แล้วนำไฟล์ MP4 ที่แปลงเสร็จมาใส่ช่องวิดีโอด้านล่าง</p>
+    </div>
+    <div class="card" style="text-align:center">
+      <a class="btn c" href="https://gamebanana.com/mods/cats/44064" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;width:100%;box-sizing:border-box">🎮 ดาวน์โหลดมอดจาก GameBanana</a>
+      <p class="mut" style="margin:8px 0 0">เปิดหน้ารวมมอดใน GameBanana ในแท็บใหม่</p>
+    </div>
+    <div class="card" style="text-align:center">
+      <button class="btn" id="btnHistory" style="width:100%">🕘 ประวัติการเล่น · จำเครื่องนี้</button>
+      <p class="mut" style="margin:8px 0 0">ประวัติจะบันทึกในเบราว์เซอร์เครื่องนี้ และกลับมาเปิดดูได้แม้ปิดแอป</p>
+    </div>
+    <div class="card" id="historyCard" style="display:none">
+      <div class="row" style="align-items:center;justify-content:space-between;gap:8px"><h3 style="margin:0">ประวัติห้องที่เคยเล่น</h3><button class="btn sm" id="btnClearHistory">ล้างประวัติห้อง</button></div>
+      <div id="roomHistory"></div>
+      <p class="mut" style="margin:10px 0 0">กดกลับเข้าห้องเดิมได้เมื่อเจ้าของห้องยังเปิดห้องอยู่ หรือแก้ชื่อและรหัสในประวัติได้</p>
+    </div>
+    <div class="card" id="soloHistoryCard" style="display:none">
+      <div class="row" style="align-items:center;justify-content:space-between;gap:8px"><h3 style="margin:0">ประวัติเล่นคนเดียว</h3><button class="btn sm" id="btnClearSoloHistory">ล้างประวัติ</button></div>
+      <div id="soloHistory"></div>
+    </div>
+    <p class="mut" style="text-align:center">ห้องเปิดจากเครื่องของเจ้าของห้องโดยตรง — ถ้าเจ้าของห้องปิดแท็บ ห้องจะปิดด้วย</p>
+  </div>
+</section>
+
+<div id="dubVideoHistoryModal" role="dialog" aria-modal="true" aria-label="วิดีโอที่เคยพากย์"><div class="inner"><div class="row between"><h2 id="dubHistoryVideoTitle">วิดีโอที่เคยพากย์</h2><button class="btn sm" id="dubHistoryClose">✕ ปิด</button></div><video id="dubHistoryVideo" controls playsinline></video><div class="row"><a class="btn c" id="dubHistoryDownload" download="dubbed-video.mp4">⬇ ดาวน์โหลดวิดีโอที่พากย์</a></div><p class="mut">วิดีโอที่บันทึกไว้ในเบราว์เซอร์เครื่องนี้</p></div></div>
+
+<!-- LOBBY -->
+<section id="lobby" class="screen">
+  <div class="top">
+    <h2>ล็อบบี้ <b id="lobbyMode"></b></h2>
+    <button class="btn sm" data-act="home">ออก</button>
+  </div>
+  <div class="lgrid">
+    <div class="card" id="roomCard">
+      <h3>ห้อง</h3>
+      <div class="code" id="roomCode"></div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn sm" id="btnCopy">คัดลอกลิงก์เชิญ</button>
+      </div>
+      <div id="qr"></div>
+    </div>
+    <div class="card">
+      <h3>ผู้เล่น</h3>
+      <div id="playersBox"></div>
+    </div>
+    <div class="card" id="packCard">
+      <h3>Voice pack</h3>
+      <div id="dropWrap">
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="เลือก Voice Pack ZIP">ลากไฟล์ .zip มาวาง หรือคลิกเพื่อเลือก</div>
+        <input type="file" id="zipIn" accept=".zip,application/zip" hidden>
+      </div>
+      <div id="packStatus" class="mut" style="margin-top:10px" role="status"></div>
+      <div class="prog" id="packProg" style="display:none"><i></i></div>
+    </div>
+    <div class="card" id="videoCard">
+      <h3>วิดีโอ MP4</h3>
+      <div class="drop" id="videoDrop" tabindex="0" role="button" aria-label="เลือกไฟล์วิดีโอ MP4">ลากไฟล์ .mp4 มาวาง หรือคลิกเพื่อเลือก</div>
+      <input type="file" id="mp4In" accept=".mp4,video/mp4" hidden>
+      <div id="videoStatus" class="mut" style="margin-top:10px" role="status">แนะนำ MP4 (H.264) · ช่องนี้จะแทนวิดีโอใน ZIP และข้ามการแปลง OGV ที่ช้า</div>
+    </div>
+    <div class="card">
+      <h3>เลือกบทบาท</h3>
+      <div id="rolesLobby"></div>
+      <div class="row" style="margin-top:10px"><button class="btn sm" id="btnAuto">สุ่มแบ่งบท</button></div>
+    </div>
+  </div>
+  <div class="bar">
+    <button class="btn y" id="btnStart" disabled>เริ่มพากย์</button>
+    <span class="mut" id="waitMsg"></span>
+  </div>
+</section>
+
+<!-- STUDIO -->
+<section id="studio" class="screen">
+  <div class="top sticky">
+    <h2 id="studioTitle"></h2>
+    <div class="row">
+      <div class="plist" id="studioPlayers"></div>
+      <span class="mut" id="doneMsg"></span>
+      <button class="btn sm c" id="btnWatch">▶ ดูวิดีโอ</button>
+      <button class="btn sm" id="btnWatchAll">ดูพร้อมกันทั้งห้อง</button>
+      <button class="btn sm" id="btnExportV">⬇ ดาวน์โหลดวิดีโอ</button>
+      <button class="btn sm" id="btnExport">⬇ เสียง (WAV)</button>
+      <button class="btn sm" data-act="home">ออก</button>
+    </div>
+  </div>
+  <div class="studio">
+    <aside class="card clips">
+      <h3>คลิป</h3>
+      <label class="ck" style="margin:0 0 10px"><input type="checkbox" id="onlyMine"> เฉพาะบทของฉัน</label>
+      <div id="clipList"></div>
+    </aside>
+    <main>
+      <div class="monitor">
+        <img id="still" alt="">
+        <video id="vid" playsinline muted preload="auto"></video>
+        <div class="rtag" id="roleTag"></div>
+        <div class="rec" id="recDot">● REC</div>
+        <div class="cap" id="cap"></div>
+        <div class="cd" id="cd"></div>
+      </div>
+      <canvas id="wave"></canvas>
+      <div class="legend"><b style="background:var(--pk)"></b>ต้นฉบับ<b style="background:var(--cy)"></b>เสียงของคุณ (สด)<b style="background:var(--rd)"></b>เส้นแดง = ตำแหน่งปัจจุบัน</div>
+      <button class="btn y xl" id="btnDone">✔ พากย์เสร็จแล้ว</button>
+      <div class="ctrl dock">
+        <button class="btn" id="bPrev" title="ก่อนหน้า (←)">‹</button>
+        <button class="btn" id="bHear" title="ฟังต้นฉบับ (H)">🔊 ฟัง<span class="kb"> (H)</span></button>
+        <button class="btn r big" id="bRec" title="อัดเสียง (R)">● อัด</button>
+        <button class="btn" id="bPlayRec" title="เล่นเสียงที่อัด">▶ เทค</button>
+        <button class="btn" id="bNext" title="ถัดไป (→)">›</button>
+      </div>
+    </main>
+    <aside class="card side">
+      <h3>บทบาท</h3>
+      <div id="rolesStudio"></div>
+      <h3 class="sp">ไมค์</h3>
+      <div class="row between"><span>ระดับเสียงพากย์</span><b id="gainVal">100%</b></div>
+      <input type="range" id="gain" min="0" max="400" step="5" value="100" aria-label="ระดับเสียงพากย์ สูงสุด 400 เปอร์เซ็นต์">
+      <button class="btn sm c" id="btnGain400" type="button" style="width:100%;margin-top:6px">เพิ่มเสียงพากย์ 400%</button>
+      <div class="mut" style="margin-top:5px">ปรับความดังเสียงที่อัดได้สูงสุด 4 เท่า · หากเสียงแตกให้ลดระดับลง</div>
+      <div class="meter"><i id="meterFill"></i></div>
+      <div class="row between"><button class="btn sm" id="btnTest">🎙 ทดสอบไมค์</button><span id="micHint"></span></div>
+      <label class="ck"><input type="checkbox" id="optOrig"> ได้ยินเสียงต้นฉบับขณะอัด (ควรใส่หูฟัง)</label>
+    </aside>
+  </div>
+</section>
+
+<!-- WATCH -->
+<div id="watch" class="overlay">
+  <div class="in">
+    <div class="monitor">
+      <video id="vid2" playsinline muted preload="auto"></video>
+      <div class="rtag" id="roleTag2"></div>
+      <div class="cap" id="cap2"></div>
+    </div>
+    <div class="ctrl">
+      <button class="btn c" id="wPlay">▶ เล่น</button>
+      <button class="btn" id="wStop">■ หยุด</button>
+      <button class="btn" id="wClose">ปิด</button>
+    </div>
+    <label class="ck"><input type="checkbox" id="wOrig" checked> ใช้เสียงต้นฉบับในบทที่ยังไม่มีใครพากย์</label>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+'use strict';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const ICE=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}];
+
+const S={name:'',mode:null,me:'me',peer:null,conn:null,conns:new Map(),players:{},roles:{},takes:{},
+  pack:null,zipBuf:null,externalVideoUrl:null,externalVideoBuffer:null,externalVideoName:'',videoIncoming:null,done:{},exporting:false,gain:100,live:[],testing:false,mRaf:0,started:false,cur:0,ctx:null,mic:null,rec:null,srcs:[],incoming:null,packTitle:'',room:'',raf:0,tmr:0};
+
+function toast(t,ms=3500){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',ms)}
+function show(id){$$('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
+function getCtx(){return S.ctx||(S.ctx=new (window.AudioContext||window.webkitAudioContext)())}
+function toAB(d){if(d instanceof ArrayBuffer)return d;if(d&&d.buffer)return d.buffer.slice(d.byteOffset,d.byteOffset+d.byteLength);return d}
+const cur=()=>S.pack&&S.pack.clips[S.cur];
+const isAuth=()=>S.mode!=='guest';
+const pname=id=>S.players[id]||'?';
+
+/* ---------- pack loading ---------- */
+function getStr(t,k){const m=t.match(new RegExp('^\\s*'+k+'\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"','m'));if(!m)return'';try{return JSON.parse('"'+m[1]+'"')}catch(e){return m[1]}}
+function getArr(t,k){const m=t.match(new RegExp('^\\s*'+k+'\\s*=\\s*(\\[.*\\])','m'));if(!m)return[];try{return JSON.parse(m[1])}catch(e){return[]}}
+
+async function loadPack(ab,local){
+  setStatus('กำลังแตกไฟล์ zip…');
+  const zip=await JSZip.loadAsync(ab);
+  const files={};
+  zip.forEach((p,f)=>{if(!f.dir&&!p.includes('__MACOSX'))files[p.split('/').pop()]=f});
+  const txts=Object.keys(files).filter(n=>/^\d+_.+\.txt$/.test(n)).sort();
+  if(!txts.length)throw new Error('ไม่พบคลิปใน zip (ต้องมีไฟล์ 001_xxx.txt / .wav / .jpg)');
+  let title='Voice pack',authors=[];
+  if(files['_pack_info.ini']){const t=await files['_pack_info.ini'].async('string');title=getStr(t,'title')||title;authors=getArr(t,'authors')}
+  const ctx=getCtx(),clips=[];
+  for(const n of txts){
+    setStatus(`กำลังโหลดคลิป ${clips.length+1}/${txts.length}`);
+    const t=await files[n].async('string'),base=n.replace(/\.txt$/,'');
+    const image=getStr(t,'image');
+    const wf=files[base+'.wav']||files[base+'.ogg']||files[base+'.mp3'];
+    let buf=null;
+    if(wf){try{buf=await ctx.decodeAudioData(await wf.async('arraybuffer'))}catch(e){console.warn('decode',base,e)}}
+    const imgUrl=image&&files[image]?URL.createObjectURL(await files[image].async('blob')):null;
+    clips.push({i:clips.length,id:base,caption:getStr(t,'caption'),ts:Number(getArr(t,'dub_timestamps')[0])||0,
+      role:String(getArr(t,'dub_characters')[0]||'?'),buf,dur:buf?buf.duration:2,imgUrl});
+  }
+  const roleMap=new Map();clips.forEach(c=>roleMap.set(c.role,(roleMap.get(c.role)||0)+1));
+  const roles=[...roleMap].map(([name,count])=>({name,count}));
+  // A separately uploaded MP4 takes priority for local packs. Embedded ZIP
+  // video remains a fallback; never block loading by transcoding OGV in-browser.
+  let videoUrl=local&&S.externalVideoUrl?S.externalVideoUrl:null;
+  const videoExt={mp4:'video/mp4',m4v:'video/mp4',webm:'video/webm',ogv:'video/ogg; codecs="theora, vorbis"',ogg:'video/ogg; codecs="theora, vorbis"',mov:'video/quicktime',mkv:'video/x-matroska'};
+  const videoNames=Object.keys(files).filter(n=>!files[n].dir&&videoExt[n.split('/').pop().split('.').pop().toLowerCase()]);
+  const baseName=n=>n.split('/').pop();
+  const vk=videoNames.find(n=>/^dub_video\.mp4$/i.test(baseName(n)))
+    ||videoNames.find(n=>/\.mp4$/i.test(n))
+    ||videoNames.find(n=>/^dub_video\./i.test(baseName(n)))
+    ||videoNames.find(n=>/^(video|movie|source|original)\./i.test(baseName(n)))
+    ||videoNames.find(n=>/\.ogv$/i.test(n))
+    ||videoNames[0];
+  if(!videoUrl&&vk){
+    setStatus('กำลังโหลดวิดีโอจาก ZIP…');
+    const ext=baseName(vk).split('.').pop().toLowerCase();
+    const videoBytes=await files[vk].async('arraybuffer');
+    videoUrl=URL.createObjectURL(new Blob([videoBytes],{type:videoExt[ext]}));
+  }
+  let backing=null;const bk=Object.keys(files).find(n=>/^_backing_track\./.test(n));
+  if(bk){setStatus('กำลังโหลดเสียงพื้นหลัง…');try{backing=await ctx.decodeAudioData(await files[bk].async('arraybuffer'))}catch(e){console.warn('backing',e)}}
+  S.pack={title,authors,clips,roles,videoUrl,backing};
+  S.packTitle=title;S.cur=0;
+  if(local){S.zipBuf=ab;S.roles={};S.takes={}}
+  setStatus('');
+  if(S.mode==='host'){pushState();for(const c of S.conns.values())if(c.open)pushPack(c)}
+  renderAll();
+}
+function setStatus(t){$('#packStatus').textContent=t}
+function setVideoStatus(t){$('#videoStatus').textContent=t}
+
+const videoSendQueues=new WeakMap();
+function pushVideo(conn){
+  if(!conn)return Promise.resolve();
+  const previous=videoSendQueues.get(conn)||Promise.resolve();
+  const next=previous.catch(()=>{}).then(()=>sendVideoNow(conn));
+  videoSendQueues.set(conn,next);
+  return next;
+}
+async function sendVideoNow(conn){
+  const buf=S.externalVideoBuffer;
+  if(!buf||!conn.open)return;
+  conn.send({t:'video-begin',size:buf.byteLength,name:S.externalVideoName||'video.mp4'});
+  const CH=262144;
+  for(let o=0;o<buf.byteLength;o+=CH){
+    if(!conn.open)return;
+    conn.send({t:'video-chunk',data:buf.slice(o,o+CH)});
+    while(conn.dataChannel&&conn.dataChannel.bufferedAmount>4e6)await sleep(30);
+  }
+  conn.send({t:'video-end'});
+}
+
+async function pushPack(conn){
+  const buf=S.zipBuf;if(!buf)return;
+  conn._packIsReady=false;
+  conn.send({t:'pack-begin',size:buf.byteLength,name:S.packTitle});
+  const CH=262144;
+  for(let o=0;o<buf.byteLength;o+=CH){
+    if(!conn.open)return;
+    conn.send({t:'pack-chunk',data:buf.slice(o,o+CH)});
+    while(conn.dataChannel&&conn.dataChannel.bufferedAmount>4e6)await sleep(30);
+  }
+  conn.send({t:'pack-end'});
+  for(const [i,tk] of Object.entries(S.takes))conn.send({t:'take',clip:Number(i),mime:tk.mime,data:tk.raw.slice(0),by:tk.by});
+}
+
+async function applyMp4Buffer(buffer,name,broadcast=false){
+  const previousPackUrl=S.pack&&S.pack.videoUrl;
+  const previousExternalUrl=S.externalVideoUrl;
+  const url=URL.createObjectURL(new Blob([buffer],{type:'video/mp4'}));
+  S.externalVideoBuffer=buffer;
+  S.externalVideoName=name||'video.mp4';
+  S.externalVideoUrl=url;
+  if(S.pack)S.pack.videoUrl=url;
+  for(const old of new Set([previousPackUrl,previousExternalUrl]))if(old&&old!==url)URL.revokeObjectURL(old);
+  for(const v of [$('#vid'),$('#vid2')]){
+    if(!v)continue;
+    v.pause();v.setAttribute('src',url);v.load();
+  }
+  setVideoStatus(`พร้อมใช้: ${S.externalVideoName} · ${(buffer.byteLength/1048576).toFixed(1)} MB — ใช้แทนวิดีโอใน ZIP`);
+  if(broadcast&&S.mode==='host'&&S.pack){
+    for(const c of S.conns.values())if(c.open&&c._packIsReady===true)await pushVideo(c);
+  }
+}
+
+async function handleMp4(file){
+  if(!file)return;
+  if(!/\.mp4$/i.test(file.name)&&file.type!=='video/mp4'){
+    toast('กรุณาเลือกไฟล์ MP4 (H.264)');return;
+  }
+  try{
+    setVideoStatus(`กำลังโหลด ${file.name}…`);
+    const buffer=await file.arrayBuffer();
+    await applyMp4Buffer(buffer,file.name,true);
+    if(!S.pack)toast('โหลด MP4 แล้ว — ต่อไปโหลด Voice Pack ZIP ในอีกช่องได้เลย');
+    else toast('เปลี่ยนวิดีโอเป็น MP4 แล้ว');
+  }catch(err){console.error(err);setVideoStatus('โหลด MP4 ไม่สำเร็จ');toast('โหลด MP4 ไม่สำเร็จ: '+err.message,6000)}
+}
+
+/* ---------- networking ---------- */
+const randCode=()=>Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random()*32|0]).join('');
+const roomLink=()=>location.origin+location.pathname+'?room='+S.room;
+
+function stateMsg(){return{t:'state',players:S.players,roles:S.roles,done:S.done,started:S.started,packTitle:S.pack?S.pack.title:S.packTitle}}
+function bcast(m,except){for(const [id,c] of S.conns)if(id!==except&&c.open)c.send(m)}
+function pushState(){if(S.mode==='host')bcast(stateMsg());renderAll()}
+
+function mkHost(tries,fixedCode){
+  const code=fixedCode||randCode();
+  const peer=new Peer('dubroom-'+code,{config:{iceServers:ICE}});
+  S.peer=peer;S.room=code;
+  peer.on('open',id=>{S.me=id;S.players={[id]:S.name};rememberRoom({room:code,name:'ห้องของฉัน',mode:'host'});enterLobby()});
+  peer.on('connection',onHostConn);
+  peer.on('error',e=>{
+    if(e.type==='unavailable-id'&&tries<5&&!fixedCode){peer.destroy();mkHost(tries+1)}
+    else toast(fixedCode&&e.type==='unavailable-id'?'รหัสห้องเดิมถูกใช้อยู่ — ลองเข้าห้องด้วยรหัสนี้แทน':'สร้างห้องไม่สำเร็จ: '+e.type)
+  });
+}
+function onHostConn(conn){
+  conn.on('data',async m=>{
+    if(!m||!m.t)return;
+    if(m.t==='join'){
+      S.conns.set(conn.peer,conn);
+      S.players[conn.peer]=String(m.name||'ผู้เล่น').slice(0,20);
+      pushState();
+      if(S.pack)pushPack(conn);
+    }else if(m.t==='pack-ready'){
+      conn._packIsReady=true;
+      if(S.externalVideoBuffer)pushVideo(conn);
+    }else if(m.t==='claim'){
+      if(S.roles[m.role]===undefined){S.roles[m.role]=conn.peer;pushState()}
+    }else if(m.t==='release'){
+      if(S.roles[m.role]===conn.peer){delete S.roles[m.role];pushState()}
+    }else if(m.t==='take'){
+      const clip=Number(m.clip),item=S.pack?.clips?.[clip];
+      if(!item||S.roles[item.role]!==conn.peer) return;
+      const raw=toAB(m.data);
+      bcast({t:'take',clip,mime:m.mime,data:raw.slice(0),by:conn.peer},conn.peer);
+      await saveTake(clip,raw,m.mime,conn.peer);
+    }else if(m.t==='done'){
+      if(m.v)S.done[conn.peer]=true;else delete S.done[conn.peer];
+      pushState();
+    }
+  });
+  const drop=()=>{
+    if(!S.conns.has(conn.peer))return;
+    S.conns.delete(conn.peer);delete S.players[conn.peer];delete S.done[conn.peer];
+    for(const r of Object.keys(S.roles))if(S.roles[r]===conn.peer)delete S.roles[r];
+    pushState();
+  };
+  conn.on('close',drop);conn.on('error',drop);
+}
+function joinRoom(code){
+  S.mode='guest';S.room=code;
+  const peer=new Peer({config:{iceServers:ICE}});S.peer=peer;
+  peer.on('open',id=>{
+    S.me=id;
+    const conn=peer.connect('dubroom-'+code,{reliable:true});S.conn=conn;
+    conn.on('open',()=>{conn.send({t:'join',name:S.name});rememberRoom({room:code,name:'ห้องพากย์',mode:'guest'});enterLobby()});
+    conn.on('data',onGuestData);
+    conn.on('close',()=>{if(S.mode==='guest'){toast('การเชื่อมต่อขาด — กลับหน้าแรกแล้วกด “กลับเข้าห้อง” เพื่อลองใหม่',5000);setTimeout(()=>{try{if(S.peer)S.peer.destroy()}catch(e){};S.mode=null;show('home');renderRoomHistory()},1500)}});
+    conn.on('error',()=>toast('สัญญาณสะดุด — ประวัติห้องถูกเก็บไว้ให้กลับเข้าใหม่ได้',5000));
+  });
+  peer.on('error',e=>{
+    if(e.type==='peer-unavailable'){toast('ไม่พบห้องรหัสนี้');peer.destroy();S.mode=null}
+    else toast('เชื่อมต่อไม่ได้: '+e.type)
+  });
+}
+async function onGuestData(m){
+  if(!m||!m.t)return;
+  switch(m.t){
+    case'state':{
+      const was=S.started;
+      S.players=m.players;S.roles=m.roles;S.done=m.done||{};S.packTitle=m.packTitle;S.started=m.started;
+      renderAll();
+      if(S.started&&!was&&S.pack)enterStudio();
+      break}
+    case'pack-begin':{
+      const oldPackUrl=S.pack&&S.pack.videoUrl;
+      S.incoming={size:m.size,parts:[],got:0};S.pack=null;S.takes={};
+      for(const old of new Set([oldPackUrl,S.externalVideoUrl]))if(old)URL.revokeObjectURL(old);
+      S.externalVideoUrl=null;S.externalVideoBuffer=null;S.externalVideoName='';
+      setVideoStatus('กำลังโหลดแพ็กจาก host — ถ้ามี MP4 แยก ระบบจะรับต่ออัตโนมัติ');renderAll();break}
+    case'pack-chunk':{
+      const ab=toAB(m.data);S.incoming.parts.push(ab);S.incoming.got+=ab.byteLength;
+      const p=$('#packProg');p.style.display='block';p.firstElementChild.style.width=(S.incoming.got/S.incoming.size*100)+'%';
+      setStatus(`กำลังรับ voice pack จาก host… ${(S.incoming.got/1048576).toFixed(1)}/${(S.incoming.size/1048576).toFixed(1)} MB`);
+      break}
+    case'pack-end':{
+      const ab=await new Blob(S.incoming.parts).arrayBuffer();S.incoming=null;
+      $('#packProg').style.display='none';
+      try{await loadPack(ab,false);if(!S.externalVideoUrl)setVideoStatus('โหลด Voice Pack แล้ว · หากวิดีโอใน ZIP จอดำ ให้เลือก MP4 ในช่องนี้');if(S.started)enterStudio();if(S.conn&&S.conn.open)S.conn.send({t:'pack-ready'})}catch(e){toast('โหลดแพ็กไม่สำเร็จ: '+e.message)}
+      break}
+    case'video-begin':
+      S.videoIncoming={size:m.size,name:m.name||'video.mp4',parts:[],got:0};
+      setVideoStatus(`กำลังรับ MP4 จาก host… 0/${(m.size/1048576).toFixed(1)} MB`);break;
+    case'video-chunk':{
+      if(!S.videoIncoming)break;
+      const chunk=toAB(m.data);S.videoIncoming.parts.push(chunk);S.videoIncoming.got+=chunk.byteLength;
+      setVideoStatus(`กำลังรับ MP4 จาก host… ${(S.videoIncoming.got/1048576).toFixed(1)}/${(S.videoIncoming.size/1048576).toFixed(1)} MB`);break}
+    case'video-end':{
+      if(!S.videoIncoming)break;
+      const incoming=S.videoIncoming;S.videoIncoming=null;
+      const ab=await new Blob(incoming.parts,{type:'video/mp4'}).arrayBuffer();
+      await applyMp4Buffer(ab,incoming.name,false);
+      if(S.started)enterStudio();break}
+    case'take':await saveTake(m.clip,toAB(m.data),m.mime,m.by);break;
+    case'watch':if(S.pack)openWatch(true);break;
+  }
+}
+
+/* ---------- roles ---------- */
+function claim(role){
+  if(S.mode==='guest'){S.conn.send({t:'claim',role});return}
+  if(S.roles[role]===undefined){S.roles[role]=S.me;pushState()}
+}
+function release(role){
+  if(S.mode==='guest'){S.conn.send({t:'release',role});return}
+  if(S.roles[role]===S.me){delete S.roles[role];pushState()}
+}
+function assign(role,id){if(!isAuth())return;if(id)S.roles[role]=id;else delete S.roles[role];pushState()}
+function autoAssign(){
+  if(!isAuth()||!S.pack)return;
+  const ids=Object.keys(S.players),roles=[...S.pack.roles].sort((a,b)=>b.count-a.count);
+  S.roles={};roles.forEach((r,i)=>S.roles[r.name]=ids[i%ids.length]);
+  pushState();
+}
+function rolesHTML(){
+  if(!S.pack)return'<div class="mut">รอโหลด voice pack…</div>';
+  const ids=Object.keys(S.players);
+  return S.pack.roles.map(r=>{
+    const o=S.roles[r.name];
+    let btn='';
+    if(o===undefined)btn=`<button class="btn sm y" data-claim="${esc(r.name)}">รับบท</button>`;
+    else if(o===S.me)btn=`<button class="btn sm" data-release="${esc(r.name)}">ปล่อยบท</button>`;
+    const sel=isAuth()&&S.mode==='host'?`<select data-assign="${esc(r.name)}"><option value="">— ว่าง —</option>${ids.map(id=>`<option value="${esc(id)}"${o===id?' selected':''}>${esc(pname(id))}</option>`).join('')}</select>`:'';
+    return`<div class="role"><div><b>${esc(r.name)}</b> <span class="mut">(${r.count} บรรทัด)</span><div class="own">${o===undefined?'<span class="mut">ว่าง</span>':'👤 '+esc(pname(o))+(S.done[o]?' ✔ เสร็จแล้ว':'')}</div></div><div>${btn}</div>${sel}</div>`
+  }).join('');
+}
+
+/* ---------- takes / recording ---------- */
+async function saveTake(i,raw,mime,by){
+  try{
+    const buf=await getCtx().decodeAudioData(raw.slice(0));
+    S.takes[i]={buf,raw,mime,by};
+    renderClipList();if(S.pack&&S.cur===i)drawWave();
+  }catch(e){console.warn('take decode failed',e)}
+}
+function sendTake(i,raw,mime){
+  if(S.mode==='host')bcast({t:'take',clip:i,mime,data:raw.slice(0),by:S.me});
+  else if(S.mode==='guest')S.conn.send({t:'take',clip:i,mime,data:raw.slice(0)});
+}
+async function getMic(){
+  if(S.mic&&S.mic.stream.active)return S.mic;
+  const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:false}});
+  const ctx=getCtx();await ctx.resume();
+  const node=ctx.createMediaStreamSource(stream),gain=ctx.createGain(),an=ctx.createAnalyser(),dest=ctx.createMediaStreamDestination();
+  an.fftSize=1024;gain.gain.value=S.gain/100;
+  node.connect(gain);gain.connect(an);gain.connect(dest);
+  S.mic={stream,gain,an,dest,buf:new Float32Array(an.fftSize)};
+  return S.mic;
+}
+function setMeter(m){
+  const l=Math.min(1,Math.sqrt(m));
+  $('#meterFill').style.transform='scaleX('+(1-l)+')';
+  $('#micHint').textContent=m>=0.98?'⚠ เสียงแตก ลดระดับลง':'';
+}
+function meterLoop(){
+  cancelAnimationFrame(S.mRaf);
+  const g=S.mic;
+  if(!g||!(S.testing||S.rec)){setMeter(0);return}
+  g.an.getFloatTimeDomainData(g.buf);
+  let m=0;for(let i=0;i<g.buf.length;i++){const a=Math.abs(g.buf[i]);if(a>m)m=a}
+  setMeter(m);
+  if(S.rec&&S.ph&&S.ph.rec)S.live.push([(performance.now()-S.ph.t0)/1000,m]);
+  S.mRaf=requestAnimationFrame(meterLoop);
+}
+async function toggleTest(){
+  if(S.testing){S.testing=false;$('#btnTest').textContent='🎙 ทดสอบไมค์';meterLoop();return}
+  try{await getMic()}catch(e){toast('เปิดไมค์ไม่ได้ — กรุณาอนุญาตการใช้ไมค์ในเบราว์เซอร์');return}
+  S.testing=true;$('#btnTest').textContent='■ หยุดทดสอบ';meterLoop();
+}
+function setGain(v){
+  S.gain=v;$('#gainVal').textContent=v+'%';
+  if(S.mic)S.mic.gain.gain.value=v/100;
+  try{localStorage.setItem('dubGain',String(v))}catch(e){}
+}
+function canRec(c){return !!c&&(S.mode==='solo'||S.roles[c.role]===S.me)}
+async function record(){
+  if(S.rec){stopRec();return}
+  const c=cur();if(!c)return;
+  if(!canRec(c)){toast(S.roles[c.role]?'บทนี้เป็นของ '+pname(S.roles[c.role]):'บทนี้ยังไม่มีเจ้าของ — กด “รับบท” ก่อนอัด');return}
+  let mic;try{mic=await getMic()}catch(e){toast('เปิดไมค์ไม่ได้ — กรุณาอนุญาตการใช้ไมค์ในเบราว์เซอร์');return}
+  stopAll();await getCtx().resume();
+  const cd=$('#cd');cd.classList.add('on');
+  for(const n of[3,2,1]){cd.textContent=n;await sleep(1000)}
+  cd.textContent='';cd.classList.add('line-wait');cd.setAttribute('aria-label','รอเส้นดำผ่านก่อนเริ่มพากย์');await sleep(1000);cd.classList.remove('on','line-wait');cd.removeAttribute('aria-label');
+  if(cur()?.i!==c.i||!canRec(c)){toast('ยกเลิกการอัด: กรุณาเลือกบทของคุณก่อนอัด');return}
+  const mime=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'].find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||'';
+  const mr=new MediaRecorder(mic.dest.stream,mime?{mimeType:mime}:{});const chunks=[];
+  mr.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+  mr.onerror=()=>{toast('การอัดเสียงสะดุด ลองอัดใหม่อีกครั้ง',5000);try{if(mr.state!=='inactive')mr.stop()}catch(e){}};
+  mr.onstop=async()=>{
+    S.rec=null;S.live=[];stopPH();clearTimeout(S.tmr);$('#recDot').classList.remove('on');$('#bRec').textContent='● อัด';stopAll();
+    const raw=await new Blob(chunks,{type:mr.mimeType}).arrayBuffer();
+    await saveTake(c.i,raw,mr.mimeType,S.me);sendTake(c.i,raw,mr.mimeType);if(S.done[S.me])setDone(false);
+    toast('บันทึกเทคแล้ว');
+  };
+  S.rec=mr;mr.start(1000); // ส่งข้อมูลเป็นช่วง ๆ ลดโอกาสเสียทั้งเทคเมื่ออัดสะดุด
+  $('#recDot').classList.add('on');$('#bRec').textContent='■ หยุด';
+  startPH(c.dur+1.2,true);S.live=[];meterLoop();
+  preview(c,$('#optOrig').checked);
+  S.tmr=setTimeout(stopRec,(c.dur+1.2)*1000);
+}
+function stopRec(){if(S.rec&&S.rec.state!=='inactive')S.rec.stop()}
+
+/* ---------- playback ---------- */
+function stopAll(){
+  S.srcs.forEach(s=>{try{s.stop()}catch(e){}});S.srcs=[];
+  cancelAnimationFrame(S.raf);stopPH();
+  [$('#vid'),$('#vid2')].forEach(v=>{try{v.pause()}catch(e){}});
+}
+function src(ctx,buf,when,dest){const s=ctx.createBufferSource();s.buffer=buf;s.connect(dest||ctx.destination);s.start(when);if(ctx===S.ctx)S.srcs.push(s);return s}
+function preview(c,withAudio,buf){
+  const v=$('#vid');
+  if(S.pack.videoUrl){v.currentTime=c.ts;v.play().catch(()=>{})}
+  const b=buf||c.buf;
+  if(withAudio&&b)src(getCtx(),b,getCtx().currentTime+0.02);
+  const len=Math.max(c.dur,buf?buf.duration:0)+0.2;
+  if(!S.rec)startPH(len-0.2,false);
+  clearTimeout(preview.t);preview.t=setTimeout(()=>{if(!S.rec){v.pause();v.currentTime=c.ts}},len*1000);
+}
+async function hear(){const c=cur();if(!c)return;stopAll();await getCtx().resume();preview(c,true)}
+async function playRec(){
+  const c=cur(),tk=c&&S.takes[c.i];if(!tk){toast('ยังไม่มีเสียงที่อัดสำหรับคลิปนี้');return}
+  stopAll();await getCtx().resume();preview(c,true,tk.buf);
+}
+
+/* ---------- watch ---------- */
+function setWatchVideoSource(v,url){
+  if(!url)return false;
+  // Compare the raw attribute/current source; video.src is browser-normalized.
+  if(v.getAttribute('src')!==url){v.pause();v.setAttribute('src',url);v.load();}
+  v.style.display='block';
+  return true;
+}
+function openWatch(auto){
+  if(!S.pack)return;
+  if(!S.pack.videoUrl){toast('ไม่พบวิดีโอในแพ็กนี้ จึงยังเปิดหน้าดูวิดีโอไม่ได้ กรุณาโหลด ZIP ที่มี dub_video.mp4 หรือ video.mp4',6500);return;}
+  stopAll();
+  const v=$('#vid2');
+  setWatchVideoSource(v,S.pack.videoUrl);
+  $('#watch').classList.add('on');
+  if(auto)watchPlay();
+}
+async function watchPlay(){
+  const p=S.pack;
+  if(!p||!p.videoUrl){toast('แพ็กนี้ไม่มีวิดีโอให้เล่น กรุณาโหลด ZIP ที่มีไฟล์วิดีโอ');return;}
+  stopAll();
+  const ctx=getCtx();await ctx.resume();
+  const v=$('#vid2');
+  v.muted=true;
+  setWatchVideoSource(v,p.videoUrl);
+  if(v.readyState<2){
+    await new Promise((res,rej)=>{
+      const ok=()=>{clean();res()},bad=()=>{clean();rej(new Error('วิดีโอโหลดไม่ได้ หรือ codec ไม่รองรับ'))};
+      const clean=()=>{v.removeEventListener('loadeddata',ok);v.removeEventListener('error',bad)};
+      v.addEventListener('loadeddata',ok,{once:true});v.addEventListener('error',bad,{once:true});
+      // Cover the race where metadata/data arrives as listeners are attached.
+      if(v.readyState>=2)ok();
+    }).catch(e=>{toast(e.message,6000);throw e});
+  }
+  try{v.currentTime=0}catch(e){}
+  await sleep(80);
+  const t0=ctx.currentTime+0.25,useOrig=$('#wOrig').checked;
+  if(p.backing)src(ctx,p.backing,t0);
+  for(const c of p.clips){const tk=S.takes[c.i];const b=tk?tk.buf:(useOrig?c.buf:null);if(b)src(ctx,b,t0+c.ts)}
+  const playAt=()=>v.play().catch(()=>{toast('กด ▶ เล่นวิดีโออีกครั้ง หากเบราว์เซอร์บล็อกการเล่นอัตโนมัติ',4500)});
+  setTimeout(playAt,250);
+  v.addEventListener('stalled',()=>{if($('#watch').classList.contains('on')&&!v.ended){const t=v.currentTime;setTimeout(()=>{if($('#watch').classList.contains('on')&&v.paused){try{v.currentTime=t;v.play().catch(()=>{})}catch(e){}}},700) }},{once:true});
+  const loop=()=>{
+    const t=v.currentTime;let a=null;
+    for(const c of p.clips){const tk=S.takes[c.i];const d=Math.max(c.dur,tk?tk.buf.duration:0);if(t>=c.ts&&t<c.ts+d+0.2){a=c;break}}
+    $('#cap2').textContent=a?a.caption:'';
+    $('#roleTag2').textContent=a?a.role+(S.takes[a.i]?' · '+pname(S.takes[a.i].by):''):'';
+    $('#roleTag2').style.display=a?'block':'none';
+    if(!v.ended&&!v.paused||t<0.5)S.raf=requestAnimationFrame(loop);
+  };
+  S.raf=requestAnimationFrame(loop);
+}
+function activeClip(t){
+  for(const c of S.pack.clips){const tk=S.takes[c.i];const d=Math.max(c.dur,tk?tk.buf.duration:0);if(t>=c.ts&&t<c.ts+d+0.2)return c}
+  return null;
+}
+let ffmpegInstance=null;
+async function transcodeToMp4(input,type){
+  // Load the transcoder only when the browser can record WebM but the user needs MP4.
+  if(!ffmpegInstance){
+    const [{FFmpeg},{toBlobURL}]=await Promise.all([
+      import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js'),
+      import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js')
+    ]);
+    const ff=new FFmpeg();
+    const base='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
+    await ff.load({
+      coreURL:await toBlobURL(base+'/ffmpeg-core.js','text/javascript'),
+      wasmURL:await toBlobURL(base+'/ffmpeg-core.wasm','application/wasm')
+    });
+    ffmpegInstance=ff;
+  }
+  const ff=ffmpegInstance,ext=type.includes('mp4')?'mp4':'webm';
+  await ff.writeFile('input.'+ext,new Uint8Array(await input.arrayBuffer()));
+  await ff.exec(['-i','input.'+ext,'-c:v','libx264','-preset','ultrafast','-pix_fmt','yuv420p','-c:a','aac','-movflags','+faststart','output.mp4']);
+  const out=await ff.readFile('output.mp4');
+  await ff.deleteFile('input.'+ext);await ff.deleteFile('output.mp4');
+  return new Blob([out.buffer],{type:'video/mp4'});
+}
+
+async function exportVideo(){
+  const p=S.pack;if(!p||S.exporting)return;
+  if(!p.videoUrl){toast('แพ็กนี้ไม่มีวิดีโอ — ใช้ปุ่มดาวน์โหลดเสียง (WAV) แทน');return}
+  if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){toast('เบราว์เซอร์นี้อัดวิดีโอไม่ได้ ลองใช้ Chrome หรือ Firefox',6000);return}
+  S.exporting=true;stopAll();
+  const btn=$('#btnExportV'),label=btn.textContent;btn.disabled=true;
+  toast('กำลังอัดวิดีโอแบบเรียลไทม์ ใช้เวลาเท่าความยาวคลิป — อย่าสลับแท็บ',7000);
+  try{
+    const ctx=getCtx();await ctx.resume();
+    const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';
+    const ready=new Promise((res,rej)=>{
+      v.addEventListener('loadeddata',res,{once:true});
+      v.addEventListener('error',()=>rej(new Error('เปิดวิดีโอไม่ได้ หรือเบราว์เซอร์ไม่รองรับ codec ของไฟล์นี้')),{once:true});
+    });
+    v.src=p.videoUrl;v.load();await ready;
+    if(!v.videoWidth||!v.videoHeight)throw new Error('ไม่พบเฟรมภาพในวิดีโอ');
+    const W=v.videoWidth,H=v.videoHeight,cv=document.createElement('canvas');cv.width=W;cv.height=H;
+    const g=cv.getContext('2d'),dest=ctx.createMediaStreamDestination();
+    let total=isFinite(v.duration)?v.duration:0;
+    p.clips.forEach(c=>{const tk=S.takes[c.i];total=Math.max(total,c.ts+Math.max(c.dur,tk?tk.buf.duration:0)+1)});
+    v.currentTime=0;await sleep(200);
+    const t0=ctx.currentTime+0.4;
+    if(p.backing)src(ctx,p.backing,t0,dest);
+    p.clips.forEach(c=>{const tk=S.takes[c.i];const b=tk?tk.buf:c.buf;if(b)src(ctx,b,t0+c.ts,dest)});
+    const stream=new MediaStream([...cv.captureStream(30).getVideoTracks(),...dest.stream.getAudioTracks()]);
+    const mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(m=>MediaRecorder.isTypeSupported(m))||'';
+    const mr=new MediaRecorder(stream,mime?{mimeType:mime,videoBitsPerSecond:3000000}:{});
+    const chunks=[];mr.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+    const stopped=new Promise(r=>mr.onstop=r);
+    let fin=false;
+    const draw=()=>{
+      if(fin)return;
+      g.fillStyle='#000';g.fillRect(0,0,W,H);if(v.readyState>=2&&v.videoWidth)g.drawImage(v,0,0,W,H);
+      const c=activeClip(v.currentTime);
+      if(c&&c.caption){
+        g.font='700 '+Math.round(H*0.07)+'px system-ui,"Noto Sans Thai",sans-serif';g.textAlign='center';g.lineJoin='round';
+        g.lineWidth=Math.max(3,H*0.012);g.strokeStyle='#000';g.fillStyle='#fff';
+        g.strokeText(c.caption,W/2,H*0.93,W*0.94);g.fillText(c.caption,W/2,H*0.93,W*0.94);
+      }
+      btn.textContent='กำลังอัดวิดีโอ… '+Math.min(99,Math.round(v.currentTime/total*100))+'%';
+      requestAnimationFrame(draw);
+    };
+    mr.start(1000);
+    await sleep(Math.max(0,(t0-ctx.currentTime)*1000));
+    await v.play();
+    requestAnimationFrame(draw);
+    await new Promise(res=>{v.onended=res;setTimeout(res,(total+3)*1000)});
+    await sleep(500);fin=true;mr.stop();await stopped;
+    const type=mr.mimeType||'video/webm';
+    // ดาวน์โหลดรูปแบบที่เบราว์เซอร์อัดได้โดยตรง (WebM หรือ MP4)
+    // ไม่บังคับแปลง WebM เป็น MP4 เพื่อให้ดาวน์โหลดได้แม้ FFmpeg ใช้งานไม่ได้
+    const output=new Blob(chunks,{type:type||'video/webm'});
+    const ext=(type||'video/webm').toLowerCase().includes('mp4')?'mp4':'webm';
+    await saveDubbedVideo(p.title||'Voice Pack',output,ext);
+    const a=document.createElement('a'),url=URL.createObjectURL(output);a.href=url;
+    a.download=(p.title||'dub').replace(/[^\w\u0E00-\u0E7F\- ]+/g,'_')+'_dub.'+ext;a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+    toast('ดาวน์โหลดวิดีโอ '+ext.toUpperCase()+' แล้ว');
+  }catch(e){toast('อัดวิดีโอไม่สำเร็จ: '+e.message,6000)}
+  finally{S.exporting=false;btn.disabled=false;btn.textContent=label;stopAll()}
+}
+function wavBlob(ab){
+  const nc=ab.numberOfChannels,len=ab.length,sr=ab.sampleRate,data=new DataView(new ArrayBuffer(44+len*nc*2));
+  const w=(o,s)=>{for(let i=0;i<s.length;i++)data.setUint8(o+i,s.charCodeAt(i))};
+  w(0,'RIFF');data.setUint32(4,36+len*nc*2,true);w(8,'WAVEfmt ');data.setUint32(16,16,true);data.setUint16(20,1,true);
+  data.setUint16(22,nc,true);data.setUint32(24,sr,true);data.setUint32(28,sr*nc*2,true);data.setUint16(32,nc*2,true);data.setUint16(34,16,true);
+  w(36,'data');data.setUint32(40,len*nc*2,true);
+  const ch=[];for(let c=0;c<nc;c++)ch.push(ab.getChannelData(c));
+  let o=44;for(let i=0;i<len;i++)for(let c=0;c<nc;c++){const s=Math.max(-1,Math.min(1,ch[c][i]));data.setInt16(o,s<0?s*0x8000:s*0x7fff,true);o+=2}
+  return new Blob([data],{type:'audio/wav'});
+}
+async function exportWav(){
+  const p=S.pack;if(!p)return;
+  toast('กำลังเรนเดอร์เสียง…');
+  let dur=p.backing?p.backing.duration:0;
+  p.clips.forEach(c=>{const tk=S.takes[c.i];dur=Math.max(dur,c.ts+Math.max(c.dur,tk?tk.buf.duration:0))});
+  const sr=44100,off=new OfflineAudioContext(2,Math.ceil((dur+0.5)*sr),sr);
+  if(p.backing)src(off,p.backing,0);
+  p.clips.forEach(c=>{const tk=S.takes[c.i];const b=tk?tk.buf:c.buf;if(b)src(off,b,c.ts)});
+  const out=await off.startRendering();
+  const a=document.createElement('a');a.href=URL.createObjectURL(wavBlob(out));
+  a.download=(p.title||'dub').replace(/[^\w\u0E00-\u0E7F\- ]+/g,'_')+'_dub.wav';a.click();
+  toast('ดาวน์โหลดแล้ว');
+}
+
+/* ---------- rendering ---------- */
+function renderPlayers(){
+  $('#playersBox').innerHTML=Object.entries(S.players).map(([id,n])=>`<div class="player"><span class="dot"></span>${esc(n)}${S.done[id]?' <span class="tag done">✔ เสร็จแล้ว</span>':''}${id===S.me?' <span class="mut">(คุณ)</span>':''}${S.mode!=='solo'&&id===(S.mode==='host'?S.me:'')?' <span class="tag">host</span>':''}</div>`).join('');
+  $('#studioPlayers').innerHTML=Object.entries(S.players).map(([id,n])=>`<span class="pl">${esc(n)}${S.done[id]?' <span class="tag done">✔ เสร็จแล้ว</span>':''}</span>`).join('');
+}
+function renderLobby(){
+  const host=S.mode==='host',solo=S.mode==='solo',guest=S.mode==='guest';
+  $('#lobbyMode').textContent=solo?'— เล่นคนเดียว':host?'— เจ้าของห้อง':'— ผู้เล่น';
+  $('#roomCard').style.display=solo?'none':'block';
+  $('#roomCode').textContent=S.room;
+  $('#dropWrap').style.display=guest?'none':'block';
+  $('#btnAuto').style.display=guest?'none':'inline-block';
+  $('#btnAuto').textContent=solo?'รับทุกบท':'สุ่มแบ่งบท';
+  if(S.pack&&!S.incoming)setStatus(`✔ ${S.pack.title} — ${S.pack.clips.length} คลิป, ${S.pack.roles.length} บทบาท`);
+  else if(!S.pack&&!S.incoming&&guest)setStatus(S.packTitle?'รอรับ voice pack จาก host…':'รอ host โหลด voice pack…');
+  const btn=$('#btnStart');
+  btn.style.display=guest?'none':'inline-block';
+  btn.disabled=!S.pack;
+  $('#waitMsg').textContent=guest?(S.pack?'รอ host กดเริ่ม…':''):(S.pack?'':'โหลด voice pack ก่อนเริ่ม');
+}
+function renderRoles(){
+  const h=rolesHTML();$('#rolesLobby').innerHTML=h;$('#rolesStudio').innerHTML=h;
+}
+const onlyMineOn=()=>S.mode!=='solo'||$('#onlyMine').checked;
+function renderClipList(){
+  const el=$('#clipList');if(!el||!S.pack)return;
+  const only=onlyMineOn();
+  const list=S.pack.clips.filter(c=>!only||S.roles[c.role]===S.me);
+  if(!list.length){el.innerHTML='<div class="mut">ยังไม่ได้เลือกบท — เลือกบทจากช่อง “บทบาท” ด้านขวา</div>';return}
+  el.innerHTML=list.map(c=>{
+    const tk=S.takes[c.i],mine=S.roles[c.role]===S.me;
+    return`<div class="clip${c.i===S.cur?' sel':''}" data-clip="${c.i}"><div class="h"><span>#${c.i+1} · ${esc(c.role)}</span><span>${mine?'<span class="tag mine">ของฉัน</span> ':''}${tk?'<span class="tag done">✔ '+esc(pname(tk.by))+'</span>':''}</span></div><div class="t">${esc(c.caption)}</div></div>`
+  }).join('');
+  const s=el.querySelector('.sel');if(s)s.scrollIntoView({block:'nearest'});
+}
+function allDone(){
+  if(S.mode==='solo')return true;
+  const ids=Object.keys(S.players);return ids.length>0&&ids.every(id=>S.done[id]);
+}
+function setDone(v){
+  if(v)S.done[S.me]=true;else delete S.done[S.me];
+  if(S.mode==='guest'){S.conn.send({t:'done',v});renderAll()}else pushState();
+}
+function renderTop(){
+  const multi=S.mode!=='solo',ad=allDone();
+  $('#btnDone').style.display=multi?'block':'none';
+  $('#btnDone').classList.toggle('isdone',!!S.done[S.me]);
+  $('#btnDone').textContent=S.done[S.me]?'✔ เสร็จแล้ว — กดเพื่อยกเลิก':'✔ พากย์เสร็จแล้ว';
+  const wait=Object.keys(S.players).filter(id=>!S.done[id]).map(pname);
+  $('#doneMsg').textContent=multi&&!ad?'รอ: '+wait.join(', '):'';
+  ['#btnWatch','#btnExportV','#btnExport'].forEach(s=>$(s).style.display=ad?'inline-block':'none');
+  $('#btnWatchAll').style.display=S.mode==='host'&&ad?'inline-block':'none';
+  if(multi&&ad&&!renderTop.was&&$('#studio').classList.contains('on'))toast('ทุกคนพากย์เสร็จแล้ว! กดดูวิดีโอได้เลย',5000);
+  renderTop.was=ad;
+}
+function renderAll(){renderPlayers();renderLobby();renderRoles();renderClipList();renderTop();
+  if(S.pack&&S.mode!=='solo'&&$('#studio').classList.contains('on')&&!S.rec){const c=cur();if(c&&S.roles[c.role]!==S.me){const f=S.pack.clips.find(x=>S.roles[x.role]===S.me);if(f)selectClip(f.i)}}
+  if($('#studio').classList.contains('on'))updateStudioTitle()}
+function updateStudioTitle(){$('#studioTitle').textContent=S.pack?S.pack.title:''}
+
+function drawWave(){
+  const cv=$('#wave'),c=cur();if(!c)return;
+  const dpr=window.devicePixelRatio||1,w=cv.width=cv.clientWidth*dpr,h=cv.height=140*dpr,g=cv.getContext('2d');
+  g.clearRect(0,0,w,h);
+  const tk=S.takes[c.i],ph=S.ph,win=Math.max(c.dur,tk?tk.buf.duration:0,0.5,ph?ph.win:0);
+  const plot=(b,col)=>{
+    if(!b)return;const d=b.getChannelData(0),n=Math.max(1,Math.floor(w*b.duration/win)),step=Math.max(1,Math.floor(d.length/n));
+    g.fillStyle=col;g.globalAlpha=.65;
+    for(let x=0;x<n;x++){let mx=0;const k0=x*step;for(let k=0;k<step;k+=Math.max(1,step>>4))mx=Math.max(mx,Math.abs(d[k0+k]||0));const hh=Math.max(1,mx*h*.9);g.fillRect(x,(h-hh)/2,1,hh)}
+  };
+  plot(c.buf,'#d6247f');plot(!S.rec&&tk?tk.buf:null,'#0891b2');
+  if(S.rec&&S.live.length){
+    g.globalAlpha=.95;
+    for(const [t,v] of S.live){const hh=Math.max(2,Math.min(1,v)*h*.9);g.fillStyle=v>=.97?'#e5334a':'#0891b2';g.fillRect(t/win*w,(h-hh)/2,Math.max(1.5,1.6*dpr),hh)}
+  }
+  g.globalAlpha=1;g.fillStyle='#c3d0db';g.fillRect(0,h/2,w,1);
+  if(ph){const t=Math.min((performance.now()-ph.t0)/1000,ph.win);g.fillStyle=ph.rec?'#e5334a':'#d98a00';g.fillRect(Math.min(w-2*dpr,t/win*w),0,2*dpr,h)}
+}
+function startPH(win,rec){
+  cancelAnimationFrame(S.phRaf);S.ph={t0:performance.now(),win,rec};
+  const f=()=>{if(!S.ph)return;drawWave();if((performance.now()-S.ph.t0)/1000<S.ph.win+0.05)S.phRaf=requestAnimationFrame(f);else stopPH()};
+  S.phRaf=requestAnimationFrame(f);
+}
+function stopPH(){cancelAnimationFrame(S.phRaf);if(S.ph){S.ph=null;if(cur())drawWave()}}
+function selectClip(i){
+  if(!S.pack)return;stopAll();stopRec();
+  S.cur=Math.max(0,Math.min(S.pack.clips.length-1,i));
+  const c=cur(),v=$('#vid');
+  $('#still').src=c.imgUrl||'';$('#cap').textContent=c.caption;
+  const o=S.roles[c.role];
+  $('#roleTag').textContent=c.role+(o?' · '+pname(o):'');
+  try{v.currentTime=c.ts}catch(e){}
+  $('#bRec').disabled=!canRec(c);
+  renderClipList();drawWave();
+}
+function step(d){
+  if(!S.pack)return;const only=onlyMineOn();let i=S.cur+d;
+  while(i>=0&&i<S.pack.clips.length){if(!only||S.roles[S.pack.clips[i].role]===S.me)break;i+=d}
+  if(i>=0&&i<S.pack.clips.length)selectClip(i);
+}
+function enterLobby(){show('lobby');renderAll()}
+function enterStudio(){
+  if(S.mode==='solo'&&S.pack)rememberSolo({name:S.pack.title||'Voice Pack'});
+  show('studio');
+  const v=$('#vid');if(S.pack.videoUrl&&v.src!==S.pack.videoUrl){v.src=S.pack.videoUrl;v.load();}
+  $('#onlyMine').closest('label').style.display=S.mode==='solo'?'flex':'none';
+  updateStudioTitle();
+  const first=S.pack.clips.find(c=>S.roles[c.role]===S.me);
+  renderAll();selectClip(first?first.i:0);
+}
+function goHome(){
+  try{if(S.mode&&S.room)rememberRoom({room:S.room,name:S.pack?.title||S.packTitle||'ห้องพากย์',mode:S.mode});}catch(e){}
+  try{if(S.conn)S.conn.close();if(S.peer)S.peer.destroy()}catch(e){}
+  location.href=location.pathname
+}
+
+/* ---------- saved dubbed videos (IndexedDB) ---------- */
+const DUB_VIDEO_DB='dub-studio-video-history',DUB_VIDEO_STORE='videos';
+function openDubVideoDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DUB_VIDEO_DB,1);req.onupgradeneeded=()=>req.result.createObjectStore(DUB_VIDEO_STORE,{keyPath:'key'});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+async function saveDubbedVideo(title,blob,ext){try{const db=await openDubVideoDB();await new Promise((resolve,reject)=>{const tx=db.transaction(DUB_VIDEO_STORE,'readwrite');tx.objectStore(DUB_VIDEO_STORE).put({key:String(title),title:String(title),blob,ext,date:Date.now()});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch(e){console.warn('Could not save dubbed video to browser history',e);toast('ดาวน์โหลดได้ แต่บันทึกวิดีโอไว้ในประวัติไม่สำเร็จ พื้นที่เบราว์เซอร์อาจเต็ม',6000)}}
+async function showDubbedVideo(title){try{const db=await openDubVideoDB();const item=await new Promise((resolve,reject)=>{const req=db.transaction(DUB_VIDEO_STORE,'readonly').objectStore(DUB_VIDEO_STORE).get(String(title));req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});db.close();if(!item){toast('ยังไม่มีวิดีโอที่พากย์และส่งออกไว้สำหรับรายการนี้ — กด “ดาวน์โหลดวิดีโอ” หลังพากย์เสร็จก่อน',6000);return}const old=$('#dubHistoryVideo').dataset.url;if(old)URL.revokeObjectURL(old);const url=URL.createObjectURL(item.blob);$('#dubHistoryVideo').src=url;$('#dubHistoryVideo').dataset.url=url;$('#dubHistoryVideoTitle').textContent='วิดีโอที่เคยพากย์: '+item.title;const a=$('#dubHistoryDownload');a.href=url;a.download=(item.title||'dub').replace(/[^\w\u0E00-\u0E7F\- ]+/g,'_')+'_dub.'+(item.ext||'mp4');$('#dubVideoHistoryModal').classList.add('on')}catch(e){console.error(e);toast('เปิดวิดีโอจากประวัติไม่สำเร็จ',5000)}}
+$('#dubHistoryClose').onclick=()=>$('#dubVideoHistoryModal').classList.remove('on');$('#dubVideoHistoryModal').addEventListener('click',e=>{if(e.target.id==='dubVideoHistoryModal')$('#dubVideoHistoryModal').classList.remove('on')});
+
+/* ---------- recoverable room history ---------- */
+let historyOpen=false;
+function getRoomHistory(){try{return JSON.parse(localStorage.getItem('dubRoomHistory')||'[]').filter(x=>x&&x.room)}catch(e){return[]}}
+function rememberRoom(item){
+  const list=getRoomHistory().filter(x=>x.room!==item.room);
+  list.unshift({room:String(item.room).toUpperCase(),name:String(item.name||'ห้องพากย์'),mode:item.mode||'guest',date:Date.now()});
+  try{localStorage.setItem('dubRoomHistory',JSON.stringify(list.slice(0,10)))}catch(e){}
+  renderRoomHistory();
+}
+function renderRoomHistory(){
+  const list=getRoomHistory(),card=$('#historyCard'),el=$('#roomHistory');
+  if(!card||!el)return;card.style.display=(historyOpen||list.length)?'block':'none';
+  el.innerHTML=list.map((x,i)=>`<div class="row" style="padding:9px 0;border-bottom:1px solid var(--line);align-items:center"><div style="flex:1;min-width:130px"><b>${esc(x.name||'ห้องพากย์')}</b><div class="mut">รหัส ${esc(x.room)} · ${new Date(x.date||Date.now()).toLocaleDateString('th-TH')}</div></div><button class="btn sm c" data-rejoin="${i}">กลับเข้าห้อง</button><button class="btn sm" data-view-video="${i}">ดูวิดีโอที่พากย์</button><button class="btn sm" data-delete-history="${i}">ลบ</button></div>`).join('');
+}
+function deleteHistory(i){
+  const list=getRoomHistory(),x=list[i];if(!x)return;
+  if(!confirm(`ลบประวัติห้อง ${x.name||x.room} (${x.room}) ใช่หรือไม่?`))return;
+  list.splice(i,1);try{localStorage.setItem('dubRoomHistory',JSON.stringify(list))}catch(e){}
+  renderRoomHistory();if(historyOpen&&list.length===0)$('#roomHistory').innerHTML='<p class="mut">ไม่มีประวัติห้องแล้ว</p>';toast('ลบประวัติห้องแล้ว');
+}
+function clearRoomHistory(){
+  const list=getRoomHistory();if(!list.length){toast('ไม่มีประวัติให้ล้าง');return}
+  if(!confirm(`ต้องการลบประวัติทั้งหมด ${list.length} ห้องใช่หรือไม่? การลบนี้ย้อนกลับไม่ได้`))return;
+  try{localStorage.removeItem('dubRoomHistory')}catch(e){}renderRoomHistory();if(historyOpen)$('#roomHistory').innerHTML='<p class="mut">ล้างประวัติทั้งหมดแล้ว</p>';toast('ล้างประวัติทั้งหมดแล้ว');
+}
+$('#btnClearHistory').onclick=clearRoomHistory;
+function getSoloHistory(){try{return JSON.parse(localStorage.getItem('dubSoloHistory')||'[]').filter(x=>x&&x.name)}catch(e){return[]}}
+function rememberSolo(item){
+  const list=getSoloHistory();
+  if(list[0]&&list[0].name===item.name&&Date.now()-list[0].date<60000)return;
+  list.unshift({name:String(item.name||'Voice Pack'),date:Date.now()});
+  try{localStorage.setItem('dubSoloHistory',JSON.stringify(list.slice(0,20)))}catch(e){}
+  renderSoloHistory();
+}
+function renderSoloHistory(){
+  const list=getSoloHistory(),card=$('#soloHistoryCard'),el=$('#soloHistory');
+  if(!card||!el)return;card.style.display=(historyOpen||list.length)?'block':'none';
+  el.innerHTML=list.length?list.map((x,i)=>`<div class="row" style="padding:9px 0;border-bottom:1px solid var(--line)"><div style="flex:1;min-width:130px"><b>${esc(x.name)}</b><div class="mut">${new Date(x.date||Date.now()).toLocaleString('th-TH')}</div></div><button class="btn sm" data-view-solo-video="${i}">ดูวิดีโอที่พากย์</button><span class="tag">เล่นคนเดียว</span></div>`).join(''):'<p class="mut">ยังไม่มีประวัติเล่นคนเดียว</p>';
+}
+$('#btnClearSoloHistory').onclick=()=>{if(!getSoloHistory().length){toast('ไม่มีประวัติให้ล้าง');return}if(confirm('ล้างประวัติเล่นคนเดียวทั้งหมดใช่หรือไม่?')){localStorage.removeItem('dubSoloHistory');renderSoloHistory();toast('ล้างประวัติเล่นคนเดียวแล้ว')}};
+function openVoiceEdit(historyType,i){
+  const item=historyType==='solo'?getSoloHistory()[i]:getRoomHistory()[i];
+  if(!item)return;
+  if(!S.pack){toast('โหลด Voice Pack ที่ต้องการแก้เสียงก่อน แล้วกดปุ่มนี้อีกครั้ง',5000);return}
+  if(historyType==='solo'&&S.mode!=='solo'){
+    S.mode='solo';S.me='me';S.players={me:S.name||'คุณ'};S.roles={};S.done={};
+  }
+  if(historyType==='room'&&S.mode==='solo'){
+    toast('เปิดห้องและโหลด Voice Pack ของห้องนั้นก่อน จึงจะแก้เสียงพากย์ของห้องได้',5000);return;
+  }
+  show('studio');
+  // Restore the currently loaded pack's video in the preview when returning to edit.
+  const video=$('#vid');
+  if(video && S.pack.videoUrl){
+    if(video.src!==S.pack.videoUrl){video.src=S.pack.videoUrl;video.load();}
+    video.currentTime=0;
+  }
+  const takeClips=S.pack.clips.filter(c=>S.takes[c.i]);
+  const target=takeClips[0]||S.pack.clips[0];
+  renderAll();
+  if(target)selectClip(target.i);
+  if(video && S.pack.videoUrl) video.scrollIntoView({behavior:'smooth',block:'center'});
+  toast(takeClips.length?'เปิดวิดีโอใน Voice Pack ที่โหลดอยู่ และเลือกบทที่มีเสียงพากย์ไว้แล้ว — กด ▶ ฟังเสียงเดิม หรือ ● อัดทับ':'เปิดวิดีโอจาก Voice Pack ที่โหลดอยู่แล้ว แต่ยังไม่พบเสียงพากย์เดิมในหน้านี้',6000);
+}
+function editHistory(i){openVoiceEdit('room',i)}
+
+/* ---------- events ---------- */
+$('#btnHistory').onclick=()=>{historyOpen=!historyOpen;renderRoomHistory();renderSoloHistory();if(historyOpen&&getRoomHistory().length===0)$('#roomHistory').innerHTML='<p class="mut">ยังไม่มีประวัติห้องที่เล่น ประวัติจะเพิ่มอัตโนมัติเมื่อเข้าหรือสร้างห้อง</p>';};
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-claim],[data-release],[data-clip],[data-act],[data-rejoin],[data-edit-history],[data-edit-solo],[data-view-video],[data-view-solo-video],[data-delete-history]');if(!t)return;
+  if(t.dataset.rejoin!==undefined){const x=getRoomHistory()[Number(t.dataset.rejoin)];if(x){needName();if(x.mode==='host'){S.mode='host';toast('กำลังเปิดห้องเดิม…');mkHost(0,x.room)}else{$('#codeIn').value=x.room;toast('กำลังกลับเข้าห้อง…');joinRoom(x.room)}}return}
+  if(t.dataset.viewVideo!==undefined){const x=getRoomHistory()[Number(t.dataset.viewVideo)];if(x)showDubbedVideo(x.name||'Voice Pack');return}
+  if(t.dataset.viewSoloVideo!==undefined){const x=getSoloHistory()[Number(t.dataset.viewSoloVideo)];if(x)showDubbedVideo(x.name||'Voice Pack');return}
+  if(t.dataset.editHistory!==undefined){editHistory(Number(t.dataset.editHistory));return}
+  if(t.dataset.editSolo!==undefined){openVoiceEdit('solo',Number(t.dataset.editSolo));return}
+  if(t.dataset.deleteHistory!==undefined){deleteHistory(Number(t.dataset.deleteHistory));return}
+  if(t.dataset.claim!==undefined)claim(t.dataset.claim);
+  else if(t.dataset.release!==undefined)release(t.dataset.release);
+  else if(t.dataset.clip!==undefined)selectClip(Number(t.dataset.clip));
+  else if(t.dataset.act==='home'){stopAll();goHome()}
+});
+document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.assign!==undefined)assign(e.target.dataset.assign,e.target.value)});
+
+function needName(){
+  const n=$('#nameIn').value.trim();
+  S.name=n||('ผู้เล่น'+(Math.random()*900+100|0));
+  try{localStorage.setItem('dubName',S.name)}catch(e){}
+  return true;
+}
+$('#btnSolo').onclick=()=>{needName();S.mode='solo';S.me='me';S.players={me:S.name};if(S.pack)rememberSolo({name:S.pack.title||'Voice Pack'});enterLobby()};
+$('#btnHost').onclick=()=>{needName();S.mode='host';toast('กำลังสร้างห้อง…');mkHost(0)};
+$('#btnJoin').onclick=()=>{
+  const c=$('#codeIn').value.trim().toUpperCase();if(c.length<4){toast('ใส่รหัสห้องก่อน');return}
+  needName();toast('กำลังเข้าห้อง…');joinRoom(c);
+};
+$('#btnCopy').onclick=async()=>{try{await navigator.clipboard.writeText(roomLink());toast('คัดลอกลิงก์แล้ว')}catch(e){prompt('คัดลอกลิงก์นี้',roomLink())}};
+$('#btnAuto').onclick=()=>autoAssign();
+$('#btnStart').onclick=()=>{if(!S.pack)return;S.started=true;if(S.mode==='host')bcast(stateMsg());enterStudio()};
+
+const drop=$('#drop'),zipIn=$('#zipIn'),videoDrop=$('#videoDrop'),mp4In=$('#mp4In');
+drop.onclick=()=>zipIn.click();
+drop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();zipIn.click()}};
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])handleZip(e.dataTransfer.files[0])};
+zipIn.onchange=()=>{if(zipIn.files[0])handleZip(zipIn.files[0]);zipIn.value=''};
+videoDrop.onclick=()=>mp4In.click();
+videoDrop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();mp4In.click()}};
+videoDrop.ondragover=e=>{e.preventDefault();videoDrop.classList.add('over')};
+videoDrop.ondragleave=()=>videoDrop.classList.remove('over');
+videoDrop.ondrop=e=>{e.preventDefault();videoDrop.classList.remove('over');if(e.dataTransfer.files[0])handleMp4(e.dataTransfer.files[0])};
+mp4In.onchange=()=>{if(mp4In.files[0])handleMp4(mp4In.files[0]);mp4In.value=''};
+async function handleZip(f){
+  try{await loadPack(await f.arrayBuffer(),true)}
+  catch(e){setStatus('');toast('โหลดแพ็กไม่สำเร็จ: '+e.message,6000)}
+}
+
+$('#onlyMine').onchange=renderClipList;
+$('#bPrev').onclick=()=>step(-1);$('#bNext').onclick=()=>step(1);
+$('#bHear').onclick=hear;$('#bRec').onclick=record;$('#bPlayRec').onclick=playRec;
+$('#btnWatch').onclick=()=>openWatch(false);
+$('#btnWatchAll').onclick=()=>{bcast({t:'watch'});openWatch(true)};
+$('#btnExport').onclick=exportWav;
+$('#btnExportV').onclick=exportVideo;
+$('#btnTest').onclick=toggleTest;
+$('#gain').oninput=e=>setGain(Number(e.target.value));
+$('#btnGain400').onclick=()=>{ $('#gain').value='400'; setGain(400); toast('ตั้งระดับเสียงพากย์เป็น 400% แล้ว'); };
+$('#btnDone').onclick=()=>setDone(!S.done[S.me]);
+$('#wPlay').onclick=watchPlay;
+$('#vid2').addEventListener('error',()=>{
+  const v=$('#vid2'),err=v.error;
+  const detail=err?` (รหัส ${err.code})`:'';
+  toast('เปิดวิดีโอไม่ได้'+detail+' — เลือกไฟล์ MP4 (H.264) ในช่อง “วิดีโอ MP4” เพื่อแทนวิดีโอใน ZIP',7000);
+});
+// OGV metadata may arrive before the first decoded frame; check after loadeddata/canplay.
+let watchFrameCheck=0;
+$('#vid2').addEventListener('loadeddata',()=>{
+  const v=$('#vid2');
+  if(!$('#watch').classList.contains('on'))return;
+  clearTimeout(watchFrameCheck);
+  watchFrameCheck=setTimeout(()=>{
+    if(!$('#watch').classList.contains('on'))return;
+    if(v.videoWidth>0&&v.videoHeight>0)return;
+    toast('เบราว์เซอร์แสดงภาพจากวิดีโอใน ZIP ไม่ได้ — เลือก MP4 (H.264) ในช่อง “วิดีโอ MP4” ได้เลย',7000);
+  },500);
+});
+$('#wStop').onclick=()=>{stopAll();$('#cap2').textContent=''};
+$('#wClose').onclick=()=>{stopAll();$('#watch').classList.remove('on')};
+document.addEventListener('keydown',e=>{
+  if(!$('#studio').classList.contains('on')||$('#watch').classList.contains('on')||/INPUT|SELECT/.test(e.target.tagName))return;
+  if(e.key==='r'||e.key==='R')record();
+  else if(e.key==='h'||e.key==='H')hear();
+  else if(e.key==='ArrowRight')step(1);
+  else if(e.key==='ArrowLeft')step(-1);
+});
+window.addEventListener('resize',()=>{if($('#studio').classList.contains('on'))drawWave()});
+
+(function init(){
+  try{$('#nameIn').value=localStorage.getItem('dubName')||'';renderSoloHistory();const g=Number(localStorage.getItem('dubGain'));if(g>=0&&g<=400&&localStorage.getItem('dubGain')!==null)S.gain=g}catch(e){}
+  $('#gain').value=S.gain;$('#gainVal').textContent=S.gain+'%';
+  const room=new URLSearchParams(location.search).get('room');
+  if(room){$('#codeIn').value=room.toUpperCase()}
+  renderRoomHistory();
+  if(!window.Peer)toast('โหลดไลบรารีห้องออนไลน์ไม่สำเร็จ — โหมดเล่นคนเดียวยังใช้ได้',6000);
+  // QR once lobby code is known
+  const mo=new MutationObserver(()=>{
+    const q=$('#qr');if(S.mode==='host'&&S.room&&!q.firstChild&&window.QRCode)new QRCode(q,{text:roomLink(),width:128,height:128});
+  });
+  mo.observe($('#roomCode'),{childList:true,characterData:true,subtree:true});
+})();
+</script>
+</body>
+</html>
